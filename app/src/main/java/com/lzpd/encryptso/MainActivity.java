@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,8 +31,14 @@ public class MainActivity extends AppCompatActivity {
 
             String authKey = jni.getAuthKey(this);
 
-            tv.setText(authKey + ", " + JNI.getVer());
+            tv.setText(authKey);
         });
+
+        findViewById(R.id.btn_version).setOnClickListener(v -> {
+            Toast.makeText(this, JNI.getVer(), Toast.LENGTH_SHORT).show();
+        });
+
+
     }
 
     /**

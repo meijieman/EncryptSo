@@ -13,6 +13,12 @@
         android:layout_height="wrap_content"
         android:text="getAuth" />
 
+    <Button
+        android:id="@+id/btn_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="getVer" />
+
     <TextView
         android:id="@+id/sample_text"
         android:layout_width="wrap_content"

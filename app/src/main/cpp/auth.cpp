@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "log.h"
+#include "zip_util.h"
 
 /**
  * http api 授权 key ，由服务端提供
@@ -59,6 +60,7 @@ Java_com_lzpd_encryptso_JNI_getAuthKey(JNIEnv *env, jobject obj, jobject context
 
     const char *signStrng = (env)->GetStringUTFChars(
             (jstring) (env)->CallObjectMethod(signatureObject, signToStringId), 0);
+    // NDK层通过反射PackageManager获取签名信息进行对比，hook掉与PMS交互的IPackageManager即可完美破解
     if (strcmp(signStrng, RELEASE_SIGN) == 0) {
         LOGI("签名一致");
         //签名一致  返回合法的 api key，否则返回错误
@@ -69,8 +71,15 @@ Java_com_lzpd_encryptso_JNI_getAuthKey(JNIEnv *env, jobject obj, jobject context
     }
 }
 
+// NDK层通过解压Apk包获取签名信息进行对比
+
 JNIEXPORT jstring JNICALL
-Java_com_lzpd_encryptso_JNI_getVer(JNIEnv *env, jclass clazz){
+Java_com_lzpd_encryptso_JNI_getVer(JNIEnv *env, jclass clazz) {
+
+    char *path = "";
+    char *name = "";
+    uncompress_apk(path, name);
+
     return env->NewStringUTF(VERSION);
 }
 
@@ -86,6 +95,26 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
             (env)->FindClass("android/content/pm/PackageManager"));
     packageInfoClass = (jclass) env->NewGlobalRef(
             (env)->FindClass("android/content/pm/PackageInfo"));
+
+
+    //获取apk路径
+    // android.app.ActivityThread
+    jclass localClass = env->FindClass("android/app/ActivityThread");
+    if (localClass != NULL) {
+        jmethodID getapplication = env->GetStaticMethodID(localClass, "currentApplication",
+                                                          "()Landroid/app/Application;");
+        if (getapplication != NULL) {
+            jobject application = env->CallStaticObjectMethod(localClass, getapplication);
+            jclass context = env->GetObjectClass(application);
+            jmethodID methodID_func = env->GetMethodID(context, "getPackageCodePath",
+                                                       "()Ljava/lang/String;");
+            jstring path = static_cast<jstring>(env->CallObjectMethod(application, methodID_func));
+            const char *ch = env->GetStringUTFChars(path, 0);;
+            LOGI("path %s, filename %s", env->GetStringUTFChars(path, nullptr), ch);
+//            uncompress_apk(ch, "META-INF/CERT.RSA");//.SF
+            env->ReleaseStringUTFChars(path, ch);
+        }
+    }
 
     return JNI_VERSION_1_4;
 }

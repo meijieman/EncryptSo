@@ -19,6 +19,8 @@ add_library( # Sets the name of the library.
         log.h
         # Provides a relative path to your source file(s).
         auth.h auth.cpp
+        util.cpp
+        zip_util.h zip_util.cpp
         )
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -33,6 +35,8 @@ find_library( # Sets the name of the path variable.
         # Specifies the name of the NDK library that
         # you want CMake to locate.
         log)
+
+#INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../zip)
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
